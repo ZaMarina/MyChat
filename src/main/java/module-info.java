@@ -3,6 +3,6 @@ module com.example.mychat {
     requires javafx.fxml;
 
 
-    opens com.example.mychat to javafx.fxml;
-    exports com.example.mychat;
+    exports com.example.mychat.Client;
+    opens com.example.mychat.Client to javafx.fxml;
 }
