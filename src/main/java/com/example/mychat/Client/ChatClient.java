@@ -42,7 +42,7 @@ public class ChatClient {
                 final String[] split = message.split("\\p{Blank}+");
                 final String nick = split[1];
                 controller.setAuth(true);
-                controller.addMessage("успешная авторизация под ником " + nick);//эта фраза не выводится на экран приложения
+                controller.addMessage("успешная авторизация под ником " + nick);
                 break;
             }
         }

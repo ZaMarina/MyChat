@@ -15,8 +15,6 @@ public class ClientHandler {
     private String nick;
     private AuthService authService;
 
-//    private AuthService authService;
-
     public ClientHandler(Socket socket, ChatServer server, AuthService authService) {
         try {
             this.socket = socket;
@@ -131,5 +129,4 @@ public class ClientHandler {
     public String getNick() {
         return nick;
     }
-
 }
