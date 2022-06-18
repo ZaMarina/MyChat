@@ -21,3 +21,4 @@ public class ChatClientApp extends Application {
         launch();
     }
 }
+
