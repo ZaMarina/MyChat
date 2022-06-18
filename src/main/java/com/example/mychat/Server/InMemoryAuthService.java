@@ -55,3 +55,5 @@ public class InMemoryAuthService implements AuthService {
         System.out.println("Сервис аутентификации остановлен");
     }
 }
+
+

@@ -79,3 +79,4 @@ public class ChatController {
         client.sendMessage("/auth " + LoginField.getText() + " " + PasswordField.getText());
     }
 }
+

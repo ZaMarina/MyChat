@@ -35,6 +35,7 @@ public class ChatClient {
 
     }
 
+
     private void waitAuth() throws IOException {
         while (true) {
             final String message = in.readUTF();
