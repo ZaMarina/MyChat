@@ -22,11 +22,11 @@ public class ClientHandler {
             this.authService = authService;
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
-//            this.server = server;
+
 
             new Thread(() -> {
                 try {
-                        authenticate();
+                    authenticate();
                     readMessage();
                 } finally {
                     closeConnection();
@@ -37,8 +37,8 @@ public class ClientHandler {
         }
     }
 
-// пусть команда аутинтефикации будет /auth login1 pass1(разделены пробелами)
-        private void authenticate() {
+    // пусть команда аутинтефикации будет /auth login1 pass1(разделены пробелами)
+    private void authenticate() {
         while (true) {
             try {
                 final String message = in.readUTF();
@@ -48,7 +48,7 @@ public class ClientHandler {
                     final String login = split[1];
                     final String password = split[2];
                     final String nick = authService.getNickByLoginAndPassword(login, password);
-                   // System.out.println("Ник " + nick);
+                    // System.out.println("Ник " + nick);
                     if (nick != null) {
                         if (server.isNickBusy(nick)) {
                             sendMessage("Пользователь уже авторизован");
@@ -108,17 +108,23 @@ public class ClientHandler {
         //должна быть проверка. Если сообщение начинается с /w... то получить должен пользователь с этим ником(2,34,00)
         //метод который возвращает ник, кому отправить сообщение
 
+        //метод разослать всем
+//вызвать метод не broadcast а разослать сообщения
+        //     out.writeUTF(message);
+        //какой класс знает обо всех подключенных клиентах?сервер. Там этот метод и сделать.Метод который посылает личные сообщения или возвращает ник получателя broadcast посылает всем, а нам нужен метод который шлет одному
+        // метод
+
         while (true) {
             try {
                 final String message = in.readUTF();
                 if ("/end".equals(message)) {
                     break;
+                } else if (message.startsWith("/w")) {
+                    server.sendPrivateMessage(this, nick + " " + message);
+                } else {
+                    server.broadcast(nick + ": " + message);
                 }
-               server.broadcast(nick + ": " + message);//метод разослать всем
-//вызвать метод не broadcast а разослать сообщения
-                //     out.writeUTF(message);
-                //какой класс знает обо всех подключенных клиентах?сервер. Там этот метод и сделать.Метод который посылает личные сообщения или возвращает ник получателя broadcast посылает всем, а нам нужен метод который шлет одному
-                // метод
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -129,4 +135,5 @@ public class ClientHandler {
     public String getNick() {
         return nick;
     }
+
 }

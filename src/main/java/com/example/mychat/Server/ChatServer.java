@@ -32,6 +32,25 @@ public class ChatServer {
         }
     }
 
+    public void sendPrivateMessage(ClientHandler clientHandler, String message) {
+        try {
+            final String[] split = message.split("\\p{Blank}+",4);
+            final String nickSender = split[0];
+            final String nickRecipient = split[2];
+            final String messageText = split[3];
+            for (ClientHandler client : clients) {
+                if (client.getNick().equals(nickRecipient)) {
+                    client.sendMessage(nickSender + ": " + messageText);
+                }
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            clientHandler.sendMessage("Error. Неверный формать сообщения");
+        }
+    }
+
+
     public void subscribe(ClientHandler client) {
         clients.add(client);//добавили клиента, который только что залогинился
     }
@@ -48,4 +67,5 @@ public class ChatServer {
     public void unsubscribe(ClientHandler client) {
         clients.remove(client);
     }
+
 }
