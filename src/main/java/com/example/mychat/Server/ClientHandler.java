@@ -1,5 +1,7 @@
 package com.example.mychat.Server;
 
+import com.example.mychat.Command;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -42,25 +44,27 @@ public class ClientHandler {
         while (true) {
             try {
                 final String message = in.readUTF();
-                if (message.startsWith("/auth")) {
-                    //должны разделить это сообщение по пробелам
-                    final String[] split = message.split("\\p{Blank}+");
-                    final String login = split[1];
-                    final String password = split[2];
-                    final String nick = authService.getNickByLoginAndPassword(login, password);
-                    // System.out.println("Ник " + nick);
-                    if (nick != null) {
-                        if (server.isNickBusy(nick)) {
-                            sendMessage("Пользователь уже авторизован");
-                            continue;
+                if (Command.isCommand(message)) {
+                    Command command = Command.getCommand(message);
+
+                    if (command == Command.AUTH) {
+                        String[] params = command.parse(message);
+                        String login = params[0];
+                        String password = params[1];
+                        final String nick = authService.getNickByLoginAndPassword(login, password);
+                        if (nick != null) {
+                            if (server.isNickBusy(nick)) {
+                                sendMessage(Command.ERROR,"Пользователь уже авторизован");
+                                continue;
+                            }
+                            sendMessage(Command.AUTHOK, nick);
+                            this.nick = nick;
+                            server.broadcast(Command.MESSAGE,"Пользователь " + nick + " зашел в чат");
+                            server.subscribe(this);
+                            break;
+                        } else {
+                            sendMessage(Command.ERROR," Неверные логин или пароль");
                         }
-                        sendMessage("/authok " + nick);
-                        this.nick = nick;
-                        server.broadcast("Пользователь " + nick + " зашел в чат");
-                        server.subscribe(this);
-                        break;
-                    } else {
-                        sendMessage(" Неверные логин или пароль");
                     }
                 }
             } catch (IOException e) {
@@ -69,9 +73,14 @@ public class ClientHandler {
         }
     }
 
+    public void sendMessage(Command command, String... params) {
+        //параметров может быь больше одного, поэтому ...
+        sendMessage(command.collectMessage(params));
+    }
+
 
     private void closeConnection() {
-        sendMessage("/end");
+        sendMessage(Command.END);
         if (in != null) {
             try {
                 in.close();
@@ -105,32 +114,26 @@ public class ClientHandler {
     }
 
     private void readMessage() {
-        //должна быть проверка. Если сообщение начинается с /w... то получить должен пользователь с этим ником(2,34,00)
-        //метод который возвращает ник, кому отправить сообщение
-
-        //метод разослать всем
-//вызвать метод не broadcast а разослать сообщения
-        //     out.writeUTF(message);
-        //какой класс знает обо всех подключенных клиентах?сервер. Там этот метод и сделать.Метод который посылает личные сообщения или возвращает ник получателя broadcast посылает всем, а нам нужен метод который шлет одному
-        // метод
 
         while (true) {
             try {
                 final String message = in.readUTF();
-                if ("/end".equals(message)) {
+                final Command command = Command.getCommand(message);
+                if (command == Command.END) {
                     break;
-                } else if (message.startsWith("/w")) {
-                    server.sendPrivateMessage(this, nick + " " + message);
-                } else {
-                    server.broadcast(nick + ": " + message);
                 }
-
+                if (command == Command.PRIVATE_MESSAGE) {
+                    String[] params = command.parse(message);
+                    server.sendPrivateMessage(this,params[0],params[1]);
+                    continue;
+                }
+                server.broadcast(Command.MESSAGE, nick + ": " + command.parse(message)[0]);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    }
 
+    }
 
     public String getNick() {
         return nick;
