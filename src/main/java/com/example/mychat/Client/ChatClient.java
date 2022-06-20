@@ -17,6 +17,8 @@ public class ChatClient {
     private DataInputStream in;
     private DataOutputStream out;
 
+    private boolean authenticate;
+
     private final ChatController controller;
 
     public ChatClient(ChatController controller) {
@@ -40,9 +42,27 @@ public class ChatClient {
             }
         }).start();
 
+        //вот тут новый тред с таймером
+
+
+        new Thread(() -> {
+             //  внутри этого треда пауза на 120 секунд
+                try {
+                    Thread.sleep(10_000);//спим определенное время
+                    if (!authenticate/*переменная*/){//если клиент не подключен
+                        closeConnection();
+                        System.out.println("closeConnection");
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }).start();
+//такой же метод
     }
 
     private void waitAuth() throws IOException {
+        authenticate = false;//Добавила
         while (true) {
             final String message = in.readUTF();
                 Command command = getCommand(message);
@@ -52,6 +72,7 @@ public class ChatClient {
                     final String nick = params[0];
                     controller.setAuth(true);
                     controller.addMessage("успешная авторизация под ником " + nick);
+                    authenticate = true;//добавила
                     break;
                 }
                 if (command==Command.ERROR){
