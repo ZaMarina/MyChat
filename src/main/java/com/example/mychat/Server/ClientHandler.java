@@ -16,7 +16,7 @@ public class ClientHandler {
     private DataOutputStream out;
     private String nick;
     private AuthService authService;
-    private boolean authenticate;
+
 
     public ClientHandler(Socket socket, ChatServer server, AuthService authService) {
         try {
@@ -26,21 +26,6 @@ public class ClientHandler {
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
 
-            //или тут
-
-//            new Thread(() -> {
-//             //  внутри этого треда пауза на 120 секунд
-//                try {
-//                    Thread.sleep(10_000);//спим определенное время
-//                    if (!authenticate/*переменная*/){//если клиент не подключен
-//                        closeConnection();
-//                        System.out.println("closeConnection");
-//                    }
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }).start();
 
 
             new Thread(() -> {
@@ -57,9 +42,8 @@ public class ClientHandler {
     }
 
     // пусть команда аутинтефикации будет /auth login1 pass1(разделены пробелами)
-    private void authenticate() {//это
-        //boolean isAuth = false;//это
-        authenticate = false;
+    private void authenticate() {
+
         while (true) {
             try {
                 final String message = in.readUTF();
@@ -80,12 +64,12 @@ public class ClientHandler {
                             this.nick = nick;
                             server.broadcast(Command.MESSAGE,"Пользователь " + nick + " зашел в чат");
                             server.subscribe(this);
-                          //  authenticate = true; //еще тут написала
+
                             break;
-                           // isAuth = true;//это
+
                         } else {
                             sendMessage(Command.ERROR," Неверные логин или пароль");
-                          //  isAuth = false;//это
+
                         }
                     }
                 }

@@ -31,9 +31,17 @@ public class ChatClient {
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
-
             try {
                 waitAuth();
+
+
+
+//                if (!authenticate){
+//                    sendMessage(Command.END);
+//                }
+
+
+
                 readMessages();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -42,22 +50,34 @@ public class ChatClient {
             }
         }).start();
 
-        //вот тут новый тред с таймером
-
 
         new Thread(() -> {
              //  внутри этого треда пауза на 120 секунд
                 try {
-                    Thread.sleep(10_000);//спим определенное время
-                    if (!authenticate/*переменная*/){//если клиент не подключен
-                        closeConnection();
+                    Thread.sleep(2_000);//спим определенное время
+                    System.out.println("10 сек");
+                    System.out.println(authenticate);
+                    if (authenticate == false){//если клиент не подключен
+
+                        System.out.println("false");
+                        sendMessage(END);
+                        System.out.println("между");
+                        readMessages();
+
                         System.out.println("closeConnection");
+                   //     controller.addMessage("closeConnection");
+
+                   //     sendMessage(Command.ERROR,"closeConnection");
+                   //     controller.showError("closeConnection");
+                                //sendMessage(Command.ERROR," Неверные логин или пароль");
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-            }).start();
+        }).start();
 //такой же метод
     }
 
@@ -67,6 +87,7 @@ public class ChatClient {
             final String message = in.readUTF();
                 Command command = getCommand(message);
                 String[] params = command.parse(message);
+
 
                 if (command==Command.AUTHOK) {///authok nick1
                     final String nick = params[0];
@@ -81,7 +102,6 @@ public class ChatClient {
                 }
             }
         }
-
 
 
     private void closeConnection() {

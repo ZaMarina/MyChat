@@ -1,16 +1,12 @@
 package com.example.mychat.Client;
 
 import com.example.mychat.Command;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -84,8 +80,9 @@ public class ChatController {
     }
 
     public void setAuth(boolean success) {
-        authBox.setVisible(!success);
-        messageBox.setVisible(success);
+        authBox.setVisible(!success);//false
+        messageBox.setVisible(success);//true
+
     }
 
     public void signinBtnClick() {
