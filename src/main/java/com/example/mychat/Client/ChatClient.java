@@ -7,12 +7,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Arrays;
 
 import static com.example.mychat.Command.*;
 
 public class ChatClient {
-
+    private static final int time = 10_000;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -32,16 +31,7 @@ public class ChatClient {
         out = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
             try {
-                waitAuth();
-
-
-
-//                if (!authenticate){
-//                    sendMessage(Command.END);
-//                }
-
-
-
+                if (waitAuth()) ;
                 readMessages();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -50,58 +40,48 @@ public class ChatClient {
             }
         }).start();
 
-
         new Thread(() -> {
-             //  внутри этого треда пауза на 120 секунд
-                try {
-                    Thread.sleep(2_000);//спим определенное время
-                    System.out.println("10 сек");
-                    System.out.println(authenticate);
-                    if (authenticate == false){//если клиент не подключен
 
-                        System.out.println("false");
-                        sendMessage(END);
-                        System.out.println("между");
-                        readMessages();
+            try {
+                Thread.sleep(time);//спим определенное время
+                if (authenticate==false) {//если клиент не подключен
 
-                        System.out.println("closeConnection");
-                   //     controller.addMessage("closeConnection");
+                    sendMessage(END);
 
-                   //     sendMessage(Command.ERROR,"closeConnection");
-                   //     controller.showError("closeConnection");
-                                //sendMessage(Command.ERROR," Неверные логин или пароль");
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("closeConnection");
+
+                    Platform.runLater(() -> controller.showError("CloseConnection \n\n Вы не вошли в чат. Время ожидания истекло."));
                 }
-
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }).start();
-//такой же метод
     }
 
-    private void waitAuth() throws IOException {
-        authenticate = false;//Добавила
+    private boolean waitAuth() throws IOException {
+          authenticate = false;//Добавила
         while (true) {
             final String message = in.readUTF();
-                Command command = getCommand(message);
-                String[] params = command.parse(message);
+            Command command = getCommand(message);
+            String[] params = command.parse(message);
 
 
-                if (command==Command.AUTHOK) {///authok nick1
-                    final String nick = params[0];
-                    controller.setAuth(true);
-                    controller.addMessage("успешная авторизация под ником " + nick);
-                    authenticate = true;//добавила
-                    break;
-                }
-                if (command==Command.ERROR){
-                    Platform.runLater(()->controller.showError(params[0]));
-                    continue;
-                }
+            if (command == Command.AUTHOK) {///authok nick1
+                final String nick = params[0];
+                controller.setAuth(true);
+                controller.addMessage("успешная авторизация под ником " + nick);
+                authenticate = true;//Добавила
+                return true;//изменила
+            }
+            if (command == Command.ERROR) {
+                Platform.runLater(() -> controller.showError(params[0]));
+                continue;
+            }
+            if (command == Command.END) {
+                return false;
             }
         }
+    }
 
 
     private void closeConnection() {
@@ -132,20 +112,20 @@ public class ChatClient {
         while (true) {
             String message = in.readUTF();
             Command command = getCommand(message);
-                if (END==command) {
-                    controller.setAuth(false);
-                    break;
-                }
+            if (END == command) {
+                controller.setAuth(false);
+                break;
+            }
             String[] params = command.parse(message);
-            if (ERROR== command){
+            if (ERROR == command) {
                 String errorMessage = params[0];
-                Platform.runLater(()->controller.showError(errorMessage));
+                Platform.runLater(() -> controller.showError(errorMessage));
                 continue;
             }
-            if (MESSAGE==command) {
+            if (MESSAGE == command) {
                 Platform.runLater(() -> controller.addMessage(command.parse(message)[0]));
             }
-            if (CLIENTS==command){
+            if (CLIENTS == command) {
                 Platform.runLater(() -> controller.updateClientsList(params));
             }
         }
