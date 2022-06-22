@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import static java.lang.Thread.sleep;
 
 //каждый клиент имеет свой сокет
 public class ClientHandler {
@@ -30,8 +31,10 @@ public class ClientHandler {
 
             new Thread(() -> {
                 try {
-                    authenticate();
-                    readMessage();
+                    //меняю тоже
+                   if (authenticate()) {
+                       readMessage();
+                   }
                 } finally {
                     closeConnection();
                 }
@@ -42,7 +45,7 @@ public class ClientHandler {
     }
 
     // пусть команда аутинтефикации будет /auth login1 pass1(разделены пробелами)
-    private void authenticate() {
+    private boolean authenticate() {//поменяла на boolean
 
         while (true) {
             try {
@@ -64,13 +67,14 @@ public class ClientHandler {
                             this.nick = nick;
                             server.broadcast(Command.MESSAGE,"Пользователь " + nick + " зашел в чат");
                             server.subscribe(this);
-
-                            break;
+                            return true;
 
                         } else {
                             sendMessage(Command.ERROR," Неверные логин или пароль");
 
                         }
+                    }else if (command == Command.END){
+                        return false;
                     }
                 }
             } catch (IOException e) {
@@ -87,6 +91,11 @@ public class ClientHandler {
 
     private void closeConnection() {
         sendMessage(Command.END);
+        try {
+            sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (in != null) {
             try {
                 in.close();

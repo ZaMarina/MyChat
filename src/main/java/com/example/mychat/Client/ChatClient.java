@@ -31,8 +31,9 @@ public class ChatClient {
         out = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
             try {
-                if (waitAuth());
-                readMessages();
+                if (waitAuth()) {
+                    readMessages();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {

@@ -98,7 +98,7 @@ public class ChatController {
     public void selectClient(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {//проверка на двойной щелчок
             String selectedNick = clientList.getSelectionModel().getSelectedItem();
-            if (selectedNick!=null && !selectedNick.isEmpty()){
+            if (/*selectedNick!=null && */!selectedNick.isEmpty()){
                 this.selectedNick=selectedNick;
             }
         }
