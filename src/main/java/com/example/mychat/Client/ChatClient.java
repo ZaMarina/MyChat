@@ -11,7 +11,7 @@ import java.net.Socket;
 import static com.example.mychat.Command.*;
 
 public class ChatClient {
-    private static final int time = 10_000;
+    private static final int time = 2_000;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -31,7 +31,7 @@ public class ChatClient {
         out = new DataOutputStream(socket.getOutputStream());
         new Thread(() -> {
             try {
-                if (waitAuth()) ;
+                if (waitAuth());
                 readMessages();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -47,8 +47,6 @@ public class ChatClient {
                 if (authenticate==false) {//если клиент не подключен
 
                     sendMessage(END);
-
-                    System.out.println("closeConnection");
 
                     Platform.runLater(() -> controller.showError("CloseConnection \n\n Вы не вошли в чат. Время ожидания истекло."));
                 }
@@ -85,6 +83,7 @@ public class ChatClient {
 
 
     private void closeConnection() {
+
         if (in != null) {
             try {
                 in.close();
