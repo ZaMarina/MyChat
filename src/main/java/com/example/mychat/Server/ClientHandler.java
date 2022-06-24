@@ -11,6 +11,8 @@ import static java.lang.Thread.sleep;
 //каждый клиент имеет свой сокет
 public class ClientHandler {
 
+ //   private static final int time = 2_000;
+
     private Socket socket;
     private ChatServer server;//этот класс знает все о клиентах
     private DataInputStream in;
@@ -27,12 +29,11 @@ public class ClientHandler {
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
 
-
-
             new Thread(() -> {
                 try {
                     //меняю тоже
                    if (authenticate()) {
+
                        readMessage();
                    }
                 } finally {
@@ -68,10 +69,8 @@ public class ClientHandler {
                             server.broadcast(Command.MESSAGE,"Пользователь " + nick + " зашел в чат");
                             server.subscribe(this);
                             return true;
-
                         } else {
                             sendMessage(Command.ERROR," Неверные логин или пароль");
-
                         }
                     }else if (command == Command.END){
                         return false;
@@ -90,12 +89,14 @@ public class ClientHandler {
 
 
     private void closeConnection() {
+        //тут вставить таймер
         sendMessage(Command.END);
-        try {
-            sleep(20000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            sleep(time);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         if (in != null) {
             try {
                 in.close();
@@ -133,6 +134,7 @@ public class ClientHandler {
         while (true) {
             try {
                 final String message = in.readUTF();
+                System.out.println(message);
                 final Command command = Command.getCommand(message);
                 if (command == Command.END) {
                     break;
